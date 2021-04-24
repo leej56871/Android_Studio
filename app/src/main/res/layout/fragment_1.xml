@@ -58,14 +58,4 @@
             android:visibility="invisible"
             ></Button>
     </RelativeLayout>
-    <Button
-        android:id="@+id/btn_addFriend"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:layout_marginHorizontal="125dp"
-        android:text="Add Friend"
-        android:backgroundTint="#009688"
-        ></Button>
-
 </LinearLayout>
