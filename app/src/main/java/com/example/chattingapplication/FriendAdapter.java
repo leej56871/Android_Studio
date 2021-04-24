@@ -1,24 +1,11 @@
 package com.example.chattingapplication;
 
-import android.content.Context;
-import android.graphics.Color;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -38,6 +25,7 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
     }
 
     public FriendAdapter(List<String> friendList, String UID) {
+        // get required information from the parameters
         this.UID = UID;
         this.friendList = friendList;
     }
@@ -53,9 +41,8 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
     // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, final int position) {
-        System.out.println(position);
         String friend = friendList.get(position);
-        viewHolder.friend_nickName.setText(friend);
+        viewHolder.friend_nickName.setText(friend); // set the friend's name as his or her email
     }
 
     @Override
@@ -78,6 +65,7 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
     }
 
     public void addFriend(String friend){
+        // add friend called from the Fragment2
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference myRef = database.getReference(UID + "_friends");
         myRef.push().setValue(friend);

@@ -6,7 +6,6 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 import com.google.android.gms.auth.api.Auth;
@@ -16,8 +15,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
@@ -39,7 +36,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         ActionBar actionBar = getSupportActionBar();
         actionBar.hide();
 
-
+        // Google Sign with Firebase
         GoogleSignInOptions googleSignInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
@@ -49,20 +46,22 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 .addApi(Auth.GOOGLE_SIGN_IN_API, googleSignInOptions)
                 .build();
 
+        // firebase authentication
         mAuth = FirebaseAuth.getInstance();
-
-        btn_login = (SignInButton) findViewById(R.id.btn_login);
+        btn_login = (SignInButton) findViewById(R.id.btn_login);    // Google sign in button
         btn_login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Rather than manually doing Google login process, create an intent,
+                // give necessary information to intent
+                // and just get result after Google login is successful
                 Intent intent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
                 startActivityForResult(intent, REQ_SIGN_GOOGLE);
-
             }
         });
     }
 
-    // Get returned result from google login (startActivityForResult)
+    // get returned result from google login (called from startActivityForResult)
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -74,21 +73,26 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             }
         }
     }
+
+    // after Google login is successful, access to firebase with Google account
     private void resultLogin(GoogleSignInAccount account){
         AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
+                        // when successfully accessed to firebase with Google account
                         if (task.isSuccessful()){
                             Toast.makeText(MainActivity.this,"Login was successful!", Toast.LENGTH_SHORT).show();
-                            Intent intent = new Intent(getApplicationContext(), MainState.class);
-                            intent.putExtra("email", account.getEmail());
-                            intent.putExtra("nickname", account.getDisplayName());
-                            intent.putExtra("photoURL", String.valueOf(account.getPhotoUrl())); // 특정 자료형을 string으로 변환
-                            startActivity(intent);
+                            // Send information to next intent
+                            Intent intent = new Intent(getApplicationContext(), MainState.class);   // going to MainState
+                            intent.putExtra("email", account.getEmail());   // send email address of user to MainState
+                            intent.putExtra("nickname", account.getDisplayName());  // get the displayed name of Google account and send to MainState
+                            intent.putExtra("photoURL", String.valueOf(account.getPhotoUrl())); // Change the profile image of google account into form of string and send to MainState
+                            startActivity(intent);  // Start MainState
                         }
                         else{
+                            // when login is failed
                             Toast.makeText(MainActivity.this,"Login failed!", Toast.LENGTH_SHORT).show();
 
                         }
@@ -98,6 +102,5 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
     }
 }

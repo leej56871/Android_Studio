@@ -24,6 +24,7 @@
             android:layout_height="100dp"
             android:layout_marginTop="450dp"
             android:visibility="invisible"
+            android:hint="Write the email of friend to add"
             ></EditText>
         <Button
             android:id="@+id/btn_submitFriend"
@@ -36,13 +37,6 @@
             android:visibility="invisible"
             ></Button>
     </RelativeLayout>
-<!--    <androidx.recyclerview.widget.RecyclerView-->
-<!--        android:id="@+id/friend_recycler"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="0dp"-->
-<!--        android:scrollbars="vertical"-->
-<!--        android:layout_weight="1"-->
-<!--        ></androidx.recyclerview.widget.RecyclerView>-->
     <Button
         android:id="@+id/btn_addFriend"
         android:layout_width="match_parent"

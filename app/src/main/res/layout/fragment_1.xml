@@ -2,14 +2,70 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:weightSum="1">
+    
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
-    <TextView
-        android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/profile_nickName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="NickName"
+            android:textSize="50sp"
+            android:gravity="center"
+            ></TextView>
+
+        <ImageButton
+            android:id="@+id/btn_changeNickName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="350dp"
+            android:src="@drawable/icon_edit"
+            android:layout_marginTop="10dp"
+            ></ImageButton>
+
+        <ImageView
+            android:id="@+id/profile_image"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:src="@drawable/icon_profile"
+            android:backgroundTint="#FFFFFF"
+            android:layout_marginLeft="160dp"
+            android:layout_marginTop="160dp"
+            ></ImageView>
+
+
+        <EditText
+            android:id="@+id/edit_changeNickName"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_marginTop="450dp"
+            android:visibility="invisible"
+            ></EditText>
+        <Button
+            android:id="@+id/btn_saveNickName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Save"
+            android:backgroundTint="#009688"
+            android:layout_marginTop="560dp"
+            android:layout_marginLeft="160dp"
+            android:visibility="invisible"
+            ></Button>
+    </RelativeLayout>
+    <Button
+        android:id="@+id/btn_addFriend"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="1번화면"
-        android:textSize="40sp"
-        android:textColor="#FFFFFF"
-        ></TextView>
+        android:gravity="center"
+        android:layout_marginHorizontal="125dp"
+        android:text="Add Friend"
+        android:backgroundTint="#009688"
+        ></Button>
 
 </LinearLayout>
