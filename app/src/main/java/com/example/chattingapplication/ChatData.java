@@ -3,9 +3,11 @@ package com.example.chattingapplication;
 import java.io.Serializable;
 
 public class ChatData implements Serializable {
-    private String msg;
+    private String msg = "";
     private String nickname;
     private String email;
+    private String format;
+    private String url = " ";
 
     public String getEmail(){
         return email;
@@ -25,4 +27,8 @@ public class ChatData implements Serializable {
     public void setNickname(String nickname) {
         this.nickname = nickname;
     }
+    public void setFormat(String format){this.format = format;}
+    public String getFormat(){return this.format;}
+    public String getUrl() {return this.url;}
+    public void setUrl(String url){this.url = url;}
 }

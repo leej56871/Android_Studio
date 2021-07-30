@@ -3,19 +3,35 @@ package com.example.chattingapplication;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.Toast;
+
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.StorageTask;
+import com.google.firebase.storage.UploadTask;
+
+import java.io.File;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,10 +44,111 @@ public class ChatActivity extends AppCompatActivity {
     private String myNickName;
     private EditText edit_msg;
     private ImageButton btn_send;
+    private ImageButton btn_add;
     private DatabaseReference myRef;
     private String myEmail;
     private String friendEmail;
     private String roomNumber;
+    private String fileChecker;
+    private Uri fileUri;
+    private StorageTask uploadTask;
+    private String myUrl = " ";
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 0 && resultCode == RESULT_OK && data != null && data.getData() != null){
+            fileUri = data.getData();
+            if (fileChecker.equals("pdf")){
+                StorageReference storageReference = FirebaseStorage.getInstance().getReference().child("PDF Files");
+                StorageReference filePath = storageReference.child(this.roomNumber + adapter.getItemCount());
+//                filePath.putFile(fileUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+//                        if (task.isSuccessful()){
+//                            myUrl = task.getResult().getMetadata().getReference().getDownloadUrl().toString();
+//
+//                            ChatData chatData = new ChatData();
+//                            chatData.setNickname(ChatActivity.this.myNickName);
+//                            chatData.setEmail(ChatActivity.this.myEmail);
+//                            chatData.setFormat("pdf");
+//                            chatData.setUrl(myUrl);
+//                            chatData.setMsg(roomNumber + adapter.getItemCount());
+//
+//                            //chatData.setMsg(filePath.toString());
+//                            //chatData.setUrl(fileUri.toString());
+//
+//                            myRef.push().setValue(chatData);
+//                        }
+//                    }
+//                });
+
+                uploadTask = filePath.putFile(fileUri);
+                uploadTask.continueWithTask(new Continuation() {
+                    @Override
+                    public Object then(@NonNull Task task) throws Exception {
+                        if (!task.isSuccessful()){
+                            throw task.getException();
+                        }
+                        return filePath.getDownloadUrl();
+                    }
+                }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Uri> task) {
+                        if (task.isSuccessful()){
+                            Uri downloadUrl = task.getResult();
+                            myUrl = downloadUrl.toString();
+
+                            ChatData chatData = new ChatData();
+                            chatData.setNickname(ChatActivity.this.myNickName);
+                            chatData.setEmail(ChatActivity.this.myEmail);
+                            chatData.setFormat("pdf");
+                            chatData.setUrl(myUrl);
+                            chatData.setMsg(roomNumber + adapter.getItemCount());
+                            myRef.push().setValue(chatData);
+                        }
+                    }
+                });
+
+            }
+            else if (fileChecker.equals("image")){
+                StorageReference storageReference = FirebaseStorage.getInstance().getReference().child("Image Files");
+                StorageReference filePath = storageReference.child(this.roomNumber + adapter.getItemCount());
+                uploadTask = filePath.putFile(fileUri);
+                uploadTask.continueWithTask(new Continuation() {
+                    @Override
+                    public Object then(@NonNull Task task) throws Exception {
+                        if (!task.isSuccessful()){
+                            throw task.getException();
+                        }
+                        return filePath.getDownloadUrl();
+
+                    }
+                }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Uri> task) {
+                        if (task.isSuccessful()){
+                            Uri downloadUrl = task.getResult();
+                            myUrl = downloadUrl.toString();
+
+                            ChatData chatData = new ChatData();
+                            chatData.setNickname(ChatActivity.this.myNickName);
+                            chatData.setEmail(ChatActivity.this.myEmail);
+                            chatData.setFormat("image");
+                            chatData.setUrl(myUrl);
+                            myRef.push().setValue(chatData);    // send the message to database
+                        }
+
+
+                    }
+                });
+            }
+            else{
+                Toast.makeText(this, "Nothing Selected!", Toast.LENGTH_SHORT);
+            }
+        }
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +178,7 @@ public class ChatActivity extends AppCompatActivity {
 
         btn_send = findViewById(R.id.btn_send);
         edit_msg = findViewById(R.id.edit_msg);
+        btn_add = findViewById(R.id.btn_add);
 
         // after writing the message, we press the send button to send the message
         btn_send.setOnClickListener(new View.OnClickListener() {
@@ -80,10 +198,54 @@ public class ChatActivity extends AppCompatActivity {
                     chatData.setNickname(ChatActivity.this.myNickName);
                     chatData.setMsg(msg);
                     chatData.setEmail(ChatActivity.this.myEmail);
+                    chatData.setFormat("text");
+                    chatData.setUrl(" ");
                     myRef.push().setValue(chatData);    // send the message to database
                     edit_msg.setText("");   // after sending message, clear the typing box
                 }
 
+            }
+        });
+
+        btn_add.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                CharSequence options[] = new CharSequence[] {
+                        "Images",
+                        "PDF Files",
+                        "MS Word File"
+
+                };
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(ChatActivity.this);
+                builder.setTitle("Select the File");
+                builder.setItems(options, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (which == 0){
+                            fileChecker = "image";
+                            Intent intent = new Intent();
+                            intent.setAction(intent.ACTION_GET_CONTENT);
+                            intent.setType("image/*");
+                            startActivityForResult(Intent.createChooser(intent, "Select Image"), 0);
+                        }
+                        else if (which == 1){
+                            fileChecker = "pdf";
+                            Intent intent = new Intent();
+                            intent.setAction(intent.ACTION_GET_CONTENT);
+                            intent.setType("application/pdf");
+                            startActivityForResult(Intent.createChooser(intent, "Select PDF file"), 0);
+                        }
+                        else if (which == 2){
+                            fileChecker = "docx";
+                            Intent intent = new Intent();
+                            intent.setAction(intent.ACTION_GET_CONTENT);
+                            intent.setType("application/msword*");
+                            startActivityForResult(Intent.createChooser(intent, "Select MS Word file"), 0);
+                        }
+                    }
+                });
+                builder.show();
             }
         });
 
@@ -109,6 +271,7 @@ public class ChatActivity extends AppCompatActivity {
                 ((ChatAdapter) adapter).addChat(chat);
                 recyclerView.scrollToPosition(adapter.getItemCount() - 1);
 
+
             }
 
             @Override
@@ -131,6 +294,10 @@ public class ChatActivity extends AppCompatActivity {
 
             }
         });
+
+
+
+
 
     }
 }

@@ -9,6 +9,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ChattingApplication">
+        <activity android:name=".View_PDF"></activity>
+
         <activity
             android:name=".BottomMenu"
             android:theme="@style/Theme.AppCompat" />

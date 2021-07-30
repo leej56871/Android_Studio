@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -21,6 +22,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
@@ -86,6 +88,32 @@ public class MainState extends AppCompatActivity {
             }
         });
 
+        Query triggerQuery = friendRef.equalTo("Trigger");
+        triggerQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                long Count = snapshot.getChildrenCount();
+                for (DataSnapshot triggerSnapshot: snapshot.getChildren()){
+                    if (Count <= 1) {
+                        System.out.println(Count);
+                        System.out.println(snapshot.getChildren().toString());
+                        System.out.println("Removed!");
+                        triggerQuery.getRef().removeValue();
+                    }
+                    else{
+                        break;
+                    }
+                    Count = Count - 1;
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                System.out.println("removing did not work!");
+                Log.e(TAG, "Cancelled", error.toException());
+            }
+        });
+
         view_nickname = (TextView)findViewById(R.id.nickname);
         Intent intent = getIntent();
         // get information flew from MainActivity
@@ -147,8 +175,9 @@ public class MainState extends AppCompatActivity {
                     finish();
                     startActivity(intent);
                 }
-                list.remove("Trigger"); // There is Trigger at the top of the user list in database to prevent error happening by accessing empty database so exclude
-
+                if (list != null){
+                    list.remove("Trigger"); // There is Trigger at the top of the user list in database to prevent error happening by accessing empty database so exclude
+                }
                 // get the friend list from the database and add friends into list2
                 temp_list = new ArrayList<String>(Arrays.asList(friendList.toString().substring(2, friendList.toString().length() - 2).split(", |=")));
                 list2 = new ArrayList<String>();
